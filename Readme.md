@@ -2,6 +2,16 @@
 
 A comprehensive, interactive machine learning analytics playground built entirely in the browser. Train classifiers, visualize decision boundaries, and explore model performance metrics — all without leaving your browser.
 
+**🌓 Dark Mode Enabled** | **⚡ Zero Dependencies** | **🚀 Instant Launch**
+
+## Quick Start
+
+1. Download or clone the repository
+2. Open `ml_ai_analytics_dashboard.html` in any modern web browser
+3. Start training ML models instantly — no setup required!
+
+The dashboard respects your system's dark/light mode preference and automatically switches themes.
+
 ## Features
 
 ### 1. **Classifier Lab**
@@ -52,6 +62,22 @@ A comprehensive, interactive machine learning analytics playground built entirel
   - Bootstrap ROC curve generation
 - **No external dependencies** beyond Chart.js (loaded via CDN)
 
+## ✨ Latest Updates
+
+### Dark Mode Support
+- **Automatic theme detection** — Respects system color scheme preference (light/dark)
+- **Smooth transitions** — 0.3s color transitions for visual polish
+- **Enhanced readability** — Optimized colors for both light and dark backgrounds
+- **CSS variables** — Easy to customize theme colors
+
+### Recent Improvements
+- ✅ Fixed HTML structure (proper DOCTYPE, head, body tags)
+- ✅ Implemented CSS custom properties for theme support
+- ✅ Added responsive body styling with max-width container
+- ✅ Improved confusion matrix and anomaly pill colors
+- ✅ Enhanced contrast for accessibility in dark mode
+- ✅ Smooth theme transitions without page reload
+
 ## How It Works
 
 ### Seeded Random Generation
@@ -78,6 +104,29 @@ const rng = (seed=42) => {
 - Per-pixel prediction using trained model
 - Color-coded regions (purple for class 0, teal for class 1)
 - Overlay training points with class indicators
+
+### Theme System
+The dashboard uses CSS custom properties for theming. Customize colors by editing the `:root` variables:
+
+```css
+:root {
+  /* Light Mode */
+  --color-text-primary: #1a1a1a;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f5;
+  /* ... */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode */
+    --color-text-primary: #e8e8e8;
+    --color-background-primary: #1e1e1e;
+    --color-background-secondary: #2d2d2d;
+    /* ... */
+  }
+}
+```
 
 ## Usage
 
@@ -181,6 +230,7 @@ This tool demonstrates core machine learning concepts through interactive visual
 
 ---
 
-**Created**: 2024  
-**Version**: 1.0  
-**Status**: Production Ready
+**Last Updated**: April 2026  
+**Version**: 1.1 (Dark Mode Release)  
+**Status**: Production Ready ✅  
+**License**: MIT (Educational & Commercial Use)

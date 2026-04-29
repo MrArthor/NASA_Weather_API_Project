@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML & AI Analytics Dashboard</title>
+<style>
+  :root {
+    /* Light mode colors */
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #666666;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f5f5;
+    --color-border-tertiary: #e0e0e0;
+    --color-border-secondary: #d0d0d0;
+    --border-radius-md: 6px;
+    --border-radius-lg: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark mode colors */
+      --color-text-primary: #e8e8e8;
+      --color-text-secondary: #b0b0b0;
+      --color-background-primary: #1e1e1e;
+      --color-background-secondary: #2d2d2d;
+      --color-border-tertiary: #404040;
+      --color-border-secondary: #3a3a3a;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body {
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .hdr {
+    padding: 1.5rem 0 0.75rem;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #534ab7;
+    background: rgba(83, 74, 183, 0.1);
+    border-radius: 4px;
+    padding: 3px 9px;
+    margin-bottom: 10px;
+  }
+  .badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #7f77dd;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .sub {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-top: 3px;
+  }
+  .tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    margin: 1.25rem 0 1.25rem;
+  }
+  .tab {
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+  }
+  .tab.active {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    border-bottom-color: #534ab7;
+  }
+  .tab:hover:not(.active) {
+    color: var(--color-text-primary);
+  }
+  .section {
+    display: none;
+  }
+  .section.active {
+    display: block;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .metric {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 12px 14px;
+  }
+  .metric .lbl {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .metric .val {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .metric .unit {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+  }
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .ctrl-row select,
+  .ctrl-row input[type="range"] {
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+  }
+  .ctrl-row select {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+  .val-badge {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    background: var(--color-background-secondary);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  button.run {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #534ab7;
+    color: #eeedfe;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+  }
+  button.run:hover {
+    background: #3c3489;
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+  }
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .legend .sq {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 520px) {
+    .two-col {
+      grid-template-columns: 1fr;
+    }
+  }
+  .conf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    width: 180px;
+  }
+  .conf-cell {
+    background: var(--color-background-secondary);
+    border-radius: 3px;
+    padding: 10px;
+    text-align: center;
+  }
+  .conf-cell .num {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .conf-cell .lbl2 {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .conf-cell.tp {
+    background: #2d5a2d;
+  }
+  .conf-cell.tn {
+    background: #2d5a2d;
+  }
+  .conf-cell.fp {
+    background: #5a2d2d;
+  }
+  .conf-cell.fn {
+    background: #5a2d2d;
+  }
+  .feature-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .feature-row .fname {
+    width: 140px;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .feature-row .bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--color-background-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .feature-row .bar-fill {
+    height: 100%;
+    background: #7f77dd;
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+  .feature-row .fval {
+    width: 36px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+  .scatter-wrap {
+    position: relative;
+    width: 100%;
+    height: 260px;
+  }
+  .anomaly-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    font-size: 13px;
+  }
+  .anomaly-row:last-child {
+    border-bottom: none;
+  }
+  .anomaly-score {
+    width: 60px;
+    text-align: right;
+    font-weight: 500;
+  }
+  .anomaly-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .pill-hi {
+    background: #7a3a3a;
+    color: #ff7f7f;
+  }
+  .pill-med {
+    background: #7a6a3a;
+    color: #ffb366;
+  }
+  .pill-lo {
+    background: #3a6a3a;
+    color: #7fff7f;
+  }
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">
+  ML & AI analytics playground — train classifiers, visualize decision
+  boundaries, and explore model performance metrics interactively
+</h2>
+
+<div class="hdr">
+  <div class="badge"><span class="dot"></span>ML analytics playground</div>
+  <h1>ML &amp; AI analytics dashboard</h1>
+  <p class="sub">
+    Train classifiers, visualize boundaries, and explore model performance — all
+    in-browser
+  </p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('classifier')">Classifier lab</div>
+  <div class="tab" onclick="switchTab('features')">Feature importance</div>
+  <div class="tab" onclick="switchTab('anomaly')">Anomaly detection</div>
+  <div class="tab" onclick="switchTab('metrics')">Model comparison</div>
+</div>
+
+<div id="tab-classifier" class="section active">
+  <div class="ctrl-row">
+    <span>Dataset:</span>
+    <select id="datasetSel" onchange="generateData()">
+      <option value="moons">Two moons</option>
+      <option value="circles">Concentric circles</option>
+      <option value="blobs">Gaussian blobs</option>
+      <option value="xor">XOR pattern</option>
+    </select>
+    <span>Model:</span>
+    <select id="modelSel">
+      <option value="knn">k-NN</option>
+      <option value="logistic">Logistic regression</option>
+      <option value="dt">Decision tree</option>
+    </select>
+    <span>Noise:</span>
+    <input
+      type="range"
+      min="0"
+      max="40"
+      value="10"
+      step="1"
+      id="noiseSlider"
+      oninput="
+        document.getElementById('noiseVal').textContent = this.value + '%'
+      "
+      style="width: 90px"
+    />
+    <span class="val-badge" id="noiseVal">10%</span>
+    <button class="run" onclick="trainAndDraw()">Train ↗</button>
+  </div>
+
+  <div class="row" id="clf-metrics">
+    <div class="metric">
+      <div class="lbl">Accuracy</div>
+      <div class="val" id="m-acc">—</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Precision</div>
+      <div class="val" id="m-prec">—</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Recall</div>
+      <div class="val" id="m-rec">—</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">F1 score</div>
+      <div class="val" id="m-f1">—</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Decision boundary</div>
+      <div class="legend">
+        <span><span class="sq" style="background: #7f77dd"></span>Class A</span>
+        <span><span class="sq" style="background: #1d9e75"></span>Class B</span>
+      </div>
+      <canvas
+        id="boundaryCanvas"
+        width="300"
+        height="260"
+        style="width: 100%; border-radius: 6px"
+        role="img"
+        aria-label="Decision boundary visualization"
+      ></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Confusion matrix</div>
+      <div
+        style="
+          display: flex;
+          gap: 24px;
+          align-items: flex-start;
+          flex-wrap: wrap;
+        "
+      >
+        <div>
+          <div
+            style="
+              font-size: 11px;
+              color: var(--color-text-secondary);
+              margin-bottom: 6px;
+              letter-spacing: 0.04em;
+            "
+          >
+            Predicted →
+          </div>
+          <div class="conf-grid" id="confMatrix">
+            <div class="conf-cell tp">
+              <div class="num" id="cm-tp">—</div>
+              <div class="lbl2">TP</div>
+            </div>
+            <div class="conf-cell fp">
+              <div class="num" id="cm-fp">—</div>
+              <div class="lbl2">FP</div>
+            </div>
+            <div class="conf-cell fn">
+              <div class="num" id="cm-fn">—</div>
+              <div class="lbl2">FN</div>
+            </div>
+            <div class="conf-cell tn">
+              <div class="num" id="cm-tn">—</div>
+              <div class="lbl2">TN</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 100px">
+          <div class="card-title" style="margin-top: 0">ROC curve</div>
+          <div style="position: relative; height: 160px">
+            <canvas
+              id="rocChart"
+              role="img"
+              aria-label="ROC curve showing true positive rate vs false positive rate"
+            ></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-features" class="section">
+  <div class="ctrl-row">
+    <span>Task:</span>
+    <select id="featureTask" onchange="drawFeatures()">
+      <option value="churn">Customer churn</option>
+      <option value="fraud">Fraud detection</option>
+      <option value="price">Price prediction</option>
+    </select>
+    <span>Method:</span>
+    <select id="featureMethod" onchange="drawFeatures()">
+      <option value="shap">SHAP values</option>
+      <option value="gain">Gain importance</option>
+      <option value="perm">Permutation</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-title">Feature importance ranking</div>
+    <div id="featureBars"></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Training vs validation loss</div>
+      <div style="position: relative; height: 180px">
+        <canvas
+          id="lossChart"
+          role="img"
+          aria-label="Training and validation loss over epochs"
+        ></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Class distribution</div>
+      <div style="position: relative; height: 180px">
+        <canvas
+          id="distChart"
+          role="img"
+          aria-label="Class label distribution"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-anomaly" class="section">
+  <div class="ctrl-row">
+    <span>Algorithm:</span>
+    <select id="anomalyAlgo" onchange="drawAnomaly()">
+      <option value="iforest">Isolation forest</option>
+      <option value="lof">Local outlier factor</option>
+      <option value="zscore">Z-score</option>
+    </select>
+    <span>Contamination:</span>
+    <input
+      type="range"
+      min="2"
+      max="20"
+      value="8"
+      step="1"
+      id="contSlider"
+      oninput="
+        document.getElementById('contVal').textContent = this.value + '%';
+        drawAnomaly();
+      "
+      style="width: 90px"
+    />
+    <span class="val-badge" id="contVal">8%</span>
+  </div>
+  <div class="row">
+    <div class="metric">
+      <div class="lbl">Total points</div>
+      <div class="val" id="an-total">200</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Anomalies</div>
+      <div class="val" id="an-count" style="color: #a32d2d">—</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Avg score</div>
+      <div class="val" id="an-score">—</div>
+    </div>
+    <div class="metric">
+      <div class="lbl">Precision@k</div>
+      <div class="val" id="an-prec">—</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Anomaly scatter</div>
+      <div class="legend">
+        <span><span class="sq" style="background: #b5d4f4"></span>Normal</span>
+        <span><span class="sq" style="background: #e24b4a"></span>Anomaly</span>
+      </div>
+      <div class="scatter-wrap">
+        <canvas
+          id="anomalyScatter"
+          role="img"
+          aria-label="Scatter plot with anomalies highlighted in red"
+        ></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Anomaly score distribution</div>
+      <div style="position: relative; height: 240px">
+        <canvas
+          id="scoreDist"
+          role="img"
+          aria-label="Distribution of anomaly scores"
+        ></canvas>
+      </div>
+      <div style="margin-top: 12px">
+        <div
+          style="
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+          "
+        >
+          Top anomalies
+        </div>
+        <div id="anomalyList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-metrics" class="section">
+  <div class="card">
+    <div class="card-title">Model accuracy comparison across datasets</div>
+    <div class="legend">
+      <span><span class="sq" style="background: #7f77dd"></span>k-NN</span>
+      <span
+        ><span class="sq" style="background: #1d9e75"></span>Logistic
+        regression</span
+      >
+      <span
+        ><span class="sq" style="background: #ba7517"></span>Decision tree</span
+      >
+      <span
+        ><span class="sq" style="background: #378add"></span>Random forest</span
+      >
+      <span><span class="sq" style="background: #d4537e"></span>SVM</span>
+    </div>
+    <div style="position: relative; height: 260px">
+      <canvas
+        id="modelCompChart"
+        role="img"
+        aria-label="Bar chart comparing accuracy of 5 ML models across 4 datasets"
+      ></canvas>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Training time vs accuracy tradeoff</div>
+      <div style="position: relative; height: 200px">
+        <canvas
+          id="tradeoffChart"
+          role="img"
+          aria-label="Bubble chart of model training time vs accuracy"
+        ></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Hyperparameter sensitivity</div>
+      <div class="ctrl-row" style="margin-bottom: 8px">
+        <span>Model:</span>
+        <select id="hpModel" onchange="drawHeatmap()">
+          <option>k-NN</option>
+          <option>SVM</option>
+          <option>Random forest</option>
+        </select>
+      </div>
+      <div style="position: relative; height: 160px">
+        <canvas
+          id="heatmapChart"
+          role="img"
+          aria-label="Heatmap of hyperparameter combinations vs accuracy"
+        ></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  const rng = (seed = 42) => {
+    let s = seed;
+    return () => {
+      s = (s * 16807 + 0) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  };
+  let R = rng(99),
+    points = [],
+    labels = [];
+  const charts = {};
+  function dc(id) {
+    if (charts[id]) {
+      charts[id].destroy();
+      delete charts[id];
+    }
+  }
+
+  function seededGauss(r) {
+    const u = r(),
+      v = r();
+    return Math.sqrt(-2 * Math.log(u + 1e-10)) * Math.cos(2 * Math.PI * v);
+  }
+
+  function generateData() {
+    R = rng(42);
+    points = [];
+    labels = [];
+    const type = document.getElementById("datasetSel").value;
+    const noise = parseInt(document.getElementById("noiseSlider").value) / 100;
+    for (let i = 0; i < 200; i++) {
+      const cls = i < 100 ? 0 : 1;
+      let x, y;
+      if (type === "moons") {
+        const a = (cls === 0 ? Math.PI : 0) + R() * Math.PI;
+        const cx = cls === 0 ? 0 : 1,
+          cy = cls === 0 ? 0.5 : 0;
+        x = cx + Math.cos(a) + seededGauss(R) * noise;
+        y = cy + Math.sin(a) + seededGauss(R) * noise;
+      } else if (type === "circles") {
+        const r = cls === 0 ? 0.3 : 0.8,
+          a = R() * 2 * Math.PI;
+        x = r * Math.cos(a) + seededGauss(R) * noise * 0.5;
+        y = r * Math.sin(a) + seededGauss(R) * noise * 0.5;
+      } else if (type === "blobs") {
+        const cx = cls === 0 ? -0.7 : 0.7,
+          cy = cls === 0 ? -0.3 : 0.3;
+        x = cx + seededGauss(R) * 0.4 + seededGauss(R) * noise;
+        y = cy + seededGauss(R) * 0.4 + seededGauss(R) * noise;
+      } else {
+        const qx = cls === 0 ? (R() > 0.5 ? 1 : -1) : R() > 0.5 ? 1 : -1;
+        const qy = cls === 0 ? qx : -qx;
+        x = qx * 0.5 + seededGauss(R) * 0.3 + seededGauss(R) * noise;
+        y = qy * 0.5 + seededGauss(R) * 0.3 + seededGauss(R) * noise;
+      }
+      points.push([x, y]);
+      labels.push(cls);
+    }
+  }
+
+  function knnPredict(train, tlabels, p, k = 5) {
+    const dists = train.map((t, i) => ({
+      d: Math.hypot(t[0] - p[0], t[1] - p[1]),
+      l: tlabels[i],
+    }));
+    dists.sort((a, b) => a.d - b.d);
+    const votes = [0, 0];
+    for (let i = 0; i < k; i++) votes[dists[i].l]++;
+    return votes[1] > votes[0] ? 1 : 0;
+  }
+
+  function logisticPredict(p, w) {
+    const z = w[0] * p[0] + w[1] * p[1] + w[2];
+    return 1 / (1 + Math.exp(-z)) > 0.5 ? 1 : 0;
+  }
+
+  function fitLogistic(pts, labs) {
+    let w = [0, 0, 0];
+    for (let iter = 0; iter < 300; iter++) {
+      let gw = [0, 0, 0];
+      for (let i = 0; i < pts.length; i++) {
+        const z = w[0] * pts[i][0] + w[1] * pts[i][1] + w[2];
+        const pred = 1 / (1 + Math.exp(-z));
+        const err = pred - labs[i];
+        gw[0] += err * pts[i][0];
+        gw[1] += err * pts[i][1];
+        gw[2] += err;
+      }
+      const lr = 0.05;
+      w[0] -= (lr * gw[0]) / pts.length;
+      w[1] -= (lr * gw[1]) / pts.length;
+      w[2] -= (lr * gw[2]) / pts.length;
+    }
+    return w;
+  }
+
+  function dtPredict(p, splits) {
+    if (p[splits.axis] < splits.val)
+      return p[1 - splits.axis] < splits.v2 ? 0 : 1;
+    return p[splits.axis] > splits.val + 0.3 ? 1 : 0;
+  }
+
+  function fitDT(pts, labs) {
+    let bestAxis = 0,
+      bestVal = 0,
+      bestGini = 1e9;
+    for (let axis = 0; axis < 2; axis++) {
+      const vals = pts.map((p) => p[axis]).sort((a, b) => a - b);
+      for (let i = 10; i < vals.length - 10; i += 5) {
+        const v = vals[i];
+        const left = labs.filter((_, j) => pts[j][axis] < v);
+        const right = labs.filter((_, j) => pts[j][axis] >= v);
+        const gini = (l) => {
+          const n = l.length;
+          if (!n) return 0;
+          const s = l.reduce((a, b) => a + b, 0) / n;
+          return 1 - s * s - (1 - s) * (1 - s);
+        };
+        const g =
+          (left.length * gini(left) + right.length * gini(right)) / labs.length;
+        if (g < bestGini) {
+          bestGini = g;
+          bestAxis = axis;
+          bestVal = v;
+        }
+      }
+    }
+    return { axis: bestAxis, val: bestVal, v2: 0 };
+  }
+
+  function trainAndDraw() {
+    if (!points.length) generateData();
+    const model = document.getElementById("modelSel").value;
+    const train = points.slice(0, 160),
+      tlabs = labels.slice(0, 160);
+    const test = points.slice(160),
+      tlabs2 = labels.slice(160);
+
+    let predictFn;
+    if (model === "knn") {
+      predictFn = (p) => knnPredict(train, tlabs, p, 7);
+    } else if (model === "logistic") {
+      const w = fitLogistic(train, tlabs);
+      predictFn = (p) => logisticPredict(p, w);
+    } else {
+      const splits = fitDT(train, tlabs);
+      predictFn = (p) => dtPredict(p, splits);
+    }
+
+    let tp = 0,
+      fp = 0,
+      fn = 0,
+      tn = 0;
+    test.forEach((p, i) => {
+      const pred = predictFn(p);
+      const act = tlabs2[i];
+      if (act === 1 && pred === 1) tp++;
+      else if (act === 0 && pred === 1) fp++;
+      else if (act === 1 && pred === 0) fn++;
+      else tn++;
+    });
+    const acc = (((tp + tn) / (tp + fp + fn + tn)) * 100).toFixed(1);
+    const prec = tp / (tp + fp + 1e-9);
+    const rec = tp / (tp + fn + 1e-9);
+    const f1 = (((2 * prec * rec) / (prec + rec + 1e-9)) * 100).toFixed(1);
+    document.getElementById("m-acc").textContent = acc + "%";
+    document.getElementById("m-prec").textContent =
+      (prec * 100).toFixed(1) + "%";
+    document.getElementById("m-rec").textContent = (rec * 100).toFixed(1) + "%";
+    document.getElementById("m-f1").textContent = f1 + "%";
+    document.getElementById("cm-tp").textContent = tp;
+    document.getElementById("cm-fp").textContent = fp;
+    document.getElementById("cm-fn").textContent = fn;
+    document.getElementById("cm-tn").textContent = tn;
+
+    drawBoundary(predictFn);
+    drawROC(test, tlabs2, predictFn);
+  }
+
+  function drawBoundary(predictFn) {
+    const canvas = document.getElementById("boundaryCanvas");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width,
+      H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const toScreen = (v, min, max, size) => ((v - min) / (max - min)) * size;
+    const xs = points.map((p) => p[0]),
+      ys = points.map((p) => p[1]);
+    const xMin = Math.min(...xs) - 0.5,
+      xMax = Math.max(...xs) + 0.5;
+    const yMin = Math.min(...ys) - 0.5,
+      yMax = Math.max(...ys) + 0.5;
+    const res = 20;
+    for (let i = 0; i < res; i++) {
+      for (let j = 0; j < res; j++) {
+        const px = xMin + ((xMax - xMin) * i) / res,
+          py = yMin + ((yMax - yMin) * j) / res;
+        const pred = predictFn([px, py]);
+        ctx.fillStyle =
+          pred === 0 ? "rgba(127,119,221,0.15)" : "rgba(29,158,117,0.15)";
+        ctx.fillRect(
+          toScreen(px, xMin, xMax, W),
+          H - toScreen(py, yMin, yMax, H) - H / res,
+          W / res + 1,
+          H / res + 1,
+        );
+      }
+    }
+    points.forEach((p, i) => {
+      const sx = toScreen(p[0], xMin, xMax, W),
+        sy = H - toScreen(p[1], yMin, yMax, H);
+      ctx.beginPath();
+      ctx.arc(sx, sy, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = labels[i] === 0 ? "#534AB7" : "#0F6E56";
+      ctx.strokeStyle = "rgba(255,255,255,0.6)";
+      ctx.lineWidth = 1;
+      ctx.fill();
+      ctx.stroke();
+    });
+  }
+
+  function drawROC(test, testlabs, predictFn) {
+    dc("rocChart");
+    const fprs = [0],
+      tprs = [0];
+    for (let thresh = 0; thresh <= 1; thresh += 0.1) {
+      let tp = 0,
+        fp = 0,
+        fn = 0,
+        tn = 0;
+      test.forEach((p, i) => {
+        const pred = predictFn(p);
+        const act = testlabs[i];
+        if (act === 1 && pred === 1) tp++;
+        else if (act === 0 && pred === 1) fp++;
+        else if (act === 1 && pred === 0) fn++;
+        else tn++;
+      });
+      fprs.push(fp / (fp + tn + 1e-9));
+      tprs.push(tp / (tp + fn + 1e-9));
+    }
+    fprs.push(1);
+    tprs.push(1);
+    charts["rocChart"] = new Chart(document.getElementById("rocChart"), {
+      type: "line",
+      data: {
+        labels: fprs.map((v) => v.toFixed(2)),
+        datasets: [
+          {
+            data: tprs,
+            borderColor: "#534AB7",
+            backgroundColor: "rgba(83,74,183,0.1)",
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+          },
+          {
+            data: fprs,
+            borderColor: "#B4B2A9",
+            borderDash: [4, 3],
+            fill: false,
+            pointRadius: 0,
+            label: "Random",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            title: { display: true, text: "FPR", font: { size: 10 } },
+            ticks: { maxTicksLimit: 5, font: { size: 10 } },
+          },
+          y: {
+            title: { display: true, text: "TPR", font: { size: 10 } },
+            ticks: { maxTicksLimit: 5, font: { size: 10 } },
+          },
+        },
+      },
+    });
+  }
+
+  const featureData = {
+    churn: {
+      features: [
+        "Monthly charges",
+        "Contract type",
+        "Tenure months",
+        "Tech support",
+        "Online security",
+        "Payment method",
+        "Dependents",
+        "Streaming TV",
+        "Partner",
+        "Senior citizen",
+      ],
+      shap: [0.92, 0.87, 0.81, 0.64, 0.58, 0.45, 0.38, 0.31, 0.25, 0.18],
+      gain: [0.88, 0.79, 0.75, 0.61, 0.55, 0.42, 0.36, 0.28, 0.22, 0.15],
+      perm: [0.85, 0.82, 0.78, 0.59, 0.53, 0.4, 0.34, 0.29, 0.2, 0.12],
+    },
+    fraud: {
+      features: [
+        "Transaction amt",
+        "Time of day",
+        "Merchant category",
+        "Card present",
+        "Distance from home",
+        "Velocity 24h",
+        "Account age",
+        "Device fingerprint",
+        "IP reputation",
+        "User history",
+      ],
+      shap: [0.95, 0.88, 0.84, 0.77, 0.72, 0.65, 0.54, 0.48, 0.39, 0.29],
+      gain: [0.91, 0.85, 0.8, 0.74, 0.69, 0.61, 0.5, 0.44, 0.35, 0.25],
+      perm: [0.89, 0.83, 0.78, 0.71, 0.67, 0.58, 0.47, 0.41, 0.32, 0.22],
+    },
+    price: {
+      features: [
+        "Square footage",
+        "Location score",
+        "Bedrooms",
+        "Year built",
+        "Lot size",
+        "School rating",
+        "Walk score",
+        "Garage spaces",
+        "Renovation year",
+        "Basement",
+      ],
+      shap: [0.93, 0.9, 0.76, 0.68, 0.62, 0.57, 0.51, 0.43, 0.37, 0.28],
+      gain: [0.9, 0.87, 0.72, 0.65, 0.59, 0.53, 0.48, 0.4, 0.33, 0.24],
+      perm: [0.88, 0.85, 0.7, 0.63, 0.57, 0.51, 0.46, 0.38, 0.3, 0.21],
+    },
+  };
+
+  function drawFeatures() {
+    const task = document.getElementById("featureTask").value;
+    const method = document.getElementById("featureMethod").value;
+    const d = featureData[task];
+    const vals = d[method];
+    const fb = document.getElementById("featureBars");
+    fb.innerHTML = "";
+    d.features.forEach((f, i) => {
+      const pct = Math.round(vals[i] * 100);
+      fb.innerHTML += `<div class="feature-row"><div class="fname">${f}</div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div><div class="fval">${pct}%</div></div>`;
+    });
+    drawLossChart();
+    drawDistChart();
+  }
+
+  function drawLossChart() {
+    dc("lossChart");
+    const epochs = Array.from({ length: 50 }, (_, i) => i + 1);
+    const R2 = rng(77);
+    const train = epochs.map(
+      (e) => 0.8 * Math.exp(-e / 15) + 0.08 + seededGauss(R2) * 0.01,
+    );
+    const val = epochs.map(
+      (e) => 0.85 * Math.exp(-e / 18) + 0.12 + seededGauss(R2) * 0.015,
+    );
+    charts["lossChart"] = new Chart(document.getElementById("lossChart"), {
+      type: "line",
+      data: {
+        labels: epochs,
+        datasets: [
+          {
+            label: "Train",
+            data: train,
+            borderColor: "#534AB7",
+            backgroundColor: "transparent",
+            tension: 0.3,
+            pointRadius: 0,
+          },
+          {
+            label: "Val",
+            data: val,
+            borderColor: "#1D9E75",
+            backgroundColor: "transparent",
+            borderDash: [5, 3],
+            tension: 0.3,
+            pointRadius: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 6, font: { size: 10 } } },
+          y: { ticks: { font: { size: 10 } }, min: 0 },
+        },
+      },
+    });
+  }
+
+  function drawDistChart() {
+    dc("distChart");
+    const task = document.getElementById("featureTask").value;
+    const data =
+      task === "churn" ? [73, 27] : task === "fraud" ? [94, 6] : [60, 40];
+    const labels2 =
+      task === "price" ? ["High price", "Low price"] : ["Negative", "Positive"];
+    charts["distChart"] = new Chart(document.getElementById("distChart"), {
+      type: "doughnut",
+      data: {
+        labels: labels2,
+        datasets: [
+          { data, backgroundColor: ["#AFA9EC", "#5DCAA5"], borderWidth: 0 },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        cutout: "60%",
+      },
+    });
+  }
+
+  function genAnomalyData(cont) {
+    const R3 = rng(55);
+    const pts = [],
+      scores = [];
+    const n = 200,
+      na = Math.round((n * cont) / 100);
+    for (let i = 0; i < n - na; i++) {
+      const x = seededGauss(R3) * 0.8,
+        y = seededGauss(R3) * 0.6;
+      const s = Math.sqrt(x * x + y * y) / 2;
+      pts.push({ x, y, anomaly: false, score: s });
+      scores.push(s);
+    }
+    for (let i = 0; i < na; i++) {
+      const x = (R3() > 0.5 ? 1 : -1) * (2 + R3() * 1.5),
+        y = (R3() > 0.5 ? 1 : -1) * (1.5 + R3() * 1);
+      const s = 0.7 + R3() * 0.3;
+      pts.push({ x, y, anomaly: true, score: s });
+      scores.push(s);
+    }
+    return pts;
+  }
+
+  function drawAnomaly() {
+    const cont = parseInt(document.getElementById("contSlider").value);
+    const pts = genAnomalyData(cont);
+    const na = pts.filter((p) => p.anomaly).length;
+    const avgScore = (
+      pts.reduce((a, p) => a + p.score, 0) / pts.length
+    ).toFixed(2);
+    document.getElementById("an-count").textContent = na;
+    document.getElementById("an-score").textContent = avgScore;
+    document.getElementById("an-prec").textContent = (
+      0.82 +
+      cont * 0.005
+    ).toFixed(2);
+
+    dc("anomalyScatter");
+    charts["anomalyScatter"] = new Chart(
+      document.getElementById("anomalyScatter"),
+      {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Normal",
+              data: pts
+                .filter((p) => !p.anomaly)
+                .map((p) => ({ x: p.x, y: p.y })),
+              backgroundColor: "rgba(55,138,221,0.5)",
+              pointRadius: 4,
+              pointHoverRadius: 5,
+            },
+            {
+              label: "Anomaly",
+              data: pts
+                .filter((p) => p.anomaly)
+                .map((p) => ({ x: p.x, y: p.y })),
+              backgroundColor: "rgba(226,75,74,0.8)",
+              pointRadius: 5,
+              pointHoverRadius: 6,
+              pointStyle: "triangle",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { font: { size: 10 } } },
+            y: { ticks: { font: { size: 10 } } },
+          },
+        },
+      },
+    );
+
+    dc("scoreDist");
+    const bins = Array.from({ length: 20 }, (_, i) => i / 20);
+    const hist = new Array(20).fill(0);
+    pts.forEach((p) => {
+      const b = Math.min(Math.floor(p.score * 20), 19);
+      hist[b]++;
+    });
+    const threshIdx = Math.floor((1 - cont / 100) * 0.8 * 20);
+    const colors = hist.map((_, i) =>
+      i >= threshIdx ? "rgba(226,75,74,0.7)" : "rgba(83,74,183,0.6)",
+    );
+    charts["scoreDist"] = new Chart(document.getElementById("scoreDist"), {
+      type: "bar",
+      data: {
+        labels: bins.map((v) => v.toFixed(1)),
+        datasets: [{ data: hist, backgroundColor: colors, borderRadius: 2 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 6, font: { size: 10 } } },
+          y: { ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+
+    const top = pts
+      .filter((p) => p.anomaly)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    document.getElementById("anomalyList").innerHTML = top
+      .map((p, i) => {
+        const tier = p.score > 0.85 ? "hi" : p.score > 0.7 ? "med" : "lo";
+        return `<div class="anomaly-row"><span style="color:var(--color-text-secondary);font-size:12px;width:20px">#${i + 1}</span><span style="flex:1;font-size:12px">Point (${p.x.toFixed(2)}, ${p.y.toFixed(2)})</span><span class="anomaly-score">${p.score.toFixed(3)}</span><span class="anomaly-pill pill-${tier}">${tier === "hi" ? "high" : tier === "med" ? "medium" : "low"}</span></div>`;
+      })
+      .join("");
+  }
+
+  function drawModelComp() {
+    dc("modelCompChart");
+    const datasets2 = [
+      {
+        label: "k-NN",
+        data: [91, 84, 78, 88],
+        backgroundColor: "rgba(127,119,221,0.8)",
+        borderRadius: 3,
+      },
+      {
+        label: "Logistic reg",
+        data: [87, 90, 82, 85],
+        backgroundColor: "rgba(29,158,117,0.8)",
+        borderRadius: 3,
+      },
+      {
+        label: "Decision tree",
+        data: [85, 81, 80, 83],
+        backgroundColor: "rgba(186,117,23,0.8)",
+        borderRadius: 3,
+      },
+      {
+        label: "Random forest",
+        data: [95, 93, 89, 92],
+        backgroundColor: "rgba(55,138,221,0.8)",
+        borderRadius: 3,
+      },
+      {
+        label: "SVM",
+        data: [92, 88, 86, 90],
+        backgroundColor: "rgba(212,83,126,0.8)",
+        borderRadius: 3,
+      },
+    ];
+    charts["modelCompChart"] = new Chart(
+      document.getElementById("modelCompChart"),
+      {
+        type: "bar",
+        data: {
+          labels: ["Moons", "Circles", "XOR", "Blobs"],
+          datasets: datasets2,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { font: { size: 11 } } },
+            y: {
+              min: 70,
+              max: 100,
+              ticks: { font: { size: 11 }, callback: (v) => v + "%" },
+            },
+          },
+        },
+      },
+    );
+
+    dc("tradeoffChart");
+    charts["tradeoffChart"] = new Chart(
+      document.getElementById("tradeoffChart"),
+      {
+        type: "bubble",
+        data: {
+          datasets: [
+            {
+              label: "k-NN",
+              data: [{ x: 120, y: 91, r: 8 }],
+              backgroundColor: "rgba(127,119,221,0.7)",
+            },
+            {
+              label: "Log reg",
+              data: [{ x: 15, y: 87, r: 6 }],
+              backgroundColor: "rgba(29,158,117,0.7)",
+            },
+            {
+              label: "Dec tree",
+              data: [{ x: 30, y: 85, r: 7 }],
+              backgroundColor: "rgba(186,117,23,0.7)",
+            },
+            {
+              label: "Rand forest",
+              data: [{ x: 890, y: 95, r: 12 }],
+              backgroundColor: "rgba(55,138,221,0.7)",
+            },
+            {
+              label: "SVM",
+              data: [{ x: 420, y: 92, r: 9 }],
+              backgroundColor: "rgba(212,83,126,0.7)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Train time (ms)",
+                font: { size: 10 },
+              },
+              ticks: { font: { size: 10 } },
+              min: -50,
+              max: 1000,
+            },
+            y: {
+              title: { display: true, text: "Accuracy %", font: { size: 10 } },
+              ticks: { font: { size: 10 } },
+              min: 80,
+              max: 100,
+            },
+          },
+        },
+      },
+    );
+
+    drawHeatmap();
+  }
+
+  function drawHeatmap() {
+    dc("heatmapChart");
+    const R4 = rng(11);
+    const rows = ["C=0.1", "C=1", "C=10", "C=100"];
+    const cols = ["γ=0.01", "γ=0.1", "γ=1", "γ=10"];
+    const data2 = rows.flatMap((r, ri) =>
+      cols.map((c, ci) => ({ x: ci, y: ri, v: +(70 + R4() * 25).toFixed(1) })),
+    );
+    const vals = data2.map((d) => d.v);
+    const vmin = Math.min(...vals),
+      vmax = Math.max(...vals);
+    const canvas2 = document.createElement("canvas");
+    canvas2.id = "heatmapChart";
+    canvas2.setAttribute("role", "img");
+    canvas2.setAttribute("aria-label", "Heatmap of hyperparameter accuracy");
+    document.getElementById("heatmapChart").replaceWith(canvas2);
+    const ctx2 = canvas2.getContext("2d");
+    const W = canvas2.offsetWidth || 280,
+      H = 160;
+    canvas2.width = W;
+    canvas2.height = H;
+    const cw = W / 4,
+      ch = H / 4;
+    data2.forEach((d) => {
+      const t = (d.v - vmin) / (vmax - vmin);
+      const r = Math.round(83 + t * (29 - 83)),
+        g = Math.round(74 + t * (158 - 74)),
+        b = Math.round(183 + t * (117 - 183));
+      ctx2.fillStyle = `rgb(${r},${g},${b})`;
+      ctx2.fillRect(d.x * cw, d.y * ch, cw - 1, ch - 1);
+      ctx2.fillStyle = "#fff";
+      ctx2.font = "11px sans-serif";
+      ctx2.textAlign = "center";
+      ctx2.fillText(d.v + "%", d.x * cw + cw / 2, d.y * ch + ch / 2 + 4);
+    });
+  }
+
+  function switchTab(name) {
+    document
+      .querySelectorAll(".tab")
+      .forEach((t, i) =>
+        t.classList.toggle(
+          "active",
+          ["classifier", "features", "anomaly", "metrics"][i] === name,
+        ),
+      );
+    document
+      .querySelectorAll(".section")
+      .forEach((s) => s.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+    if (name === "features") drawFeatures();
+    if (name === "anomaly") drawAnomaly();
+    if (name === "metrics") drawModelComp();
+  }
+
+  generateData();
+  trainAndDraw();
+</script>
+
+</body>
+</html>
